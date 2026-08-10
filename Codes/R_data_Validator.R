@@ -1,4 +1,6 @@
-# Team Excel-lence
+# Team Excel-lence: Actuarial Data Validation Engine
+
+# Step 1: Initial setup, Models, and Helper Functions and Data Schema generator ----
 
 ################################ Packages ##################################
 # Load all required R packages for file I/O, AI chat, JSON handling, and date parsing
@@ -36,6 +38,7 @@ Column_str_describer_AI <- chat_google_gemini(
   model = "gemini-3.1-flash-lite"
 )
 
+# Model 2: Validation Rule Generator Schema
 Validation_rules_AI_output <- type_object(
   `Rule ID` = type_string(description = "Unique identifier for the rule e.g. R001, R002."),
   `Table 1` = type_enum(values = c("sales_data", "claims_data"), description = "Primary dataset to validate."),
@@ -77,11 +80,11 @@ Validation_rules_AI <- chat_google_gemini(
 ################################ Functions #################################
 
 # Function: Date_converter_fxn
-# Converts messy Excel serial numbers (e.g., 44629) or formatted strings into standardized R Date objects
+# Converts messy Excel serial numbers (e.g., 44629, NA, 13/08/2018 as text) or formatted strings into standardized R Date objects
 Date_converter_fxn <- function(date_col_to_fix) {
   date_col_to_fix <- as.character(date_col_to_fix)
   date_fixed <- as.Date(rep(NA, length(date_col_to_fix)))
-
+  
   for (i in 1:length(date_col_to_fix)) {
     if (is.na(date_col_to_fix[i])) {
       next
@@ -153,14 +156,14 @@ validate_allowed_values <- function(col1, allowed_set) {
 
 # Named lookup list mapping rule type strings directly to executable R functions
 validator_tools <- list(
-  "lookup_ref"     = lookup_ref_column,
-  "missing"        = validate_missing,
-  "unique"         = validate_unique,
-  "positive"       = validate_positive,
-  "range"          = validate_range,
-  "greater_than"   = validate_greater_than,
-  "equals"         = validate_equals,
-  "exists"         = validate_exists,
+  "lookup_ref" = lookup_ref_column,
+  "missing" = validate_missing,
+  "unique" = validate_unique,
+  "positive" = validate_positive,
+  "range" = validate_range,
+  "greater_than" = validate_greater_than,
+  "equals" = validate_equals,
+  "exists" = validate_exists,
   "allowed_values" = validate_allowed_values
 )
 
@@ -168,12 +171,12 @@ validator_tools <- list(
 
 ################################ Data Schema generator #####################
 
-# Step 1: Read raw input Excel files
+### Raw input Excel files read in
 sales_data_raw <- read_excel(path = file.path(Path, "Input", "EV_Vehicle_Sales_Data_500.xlsx")) |> as.data.frame()
 claims_data_raw <- read_excel(path = file.path(Path, "Input", "EV_Warranty_Claims_Synthetic_Flawed_150-1.xlsx")) |> as.data.frame()
 print("Excel files loaded successfully")
 
-# Step 2: Query Gemini AI to analyze raw structure and generate Data_Schema
+### Query Gemini AI to analyze raw structure and generate Data_Schema
 question <- paste0(
   "The attached are 2 data tables from ABC insurance company.
   Sales refers to all the vehicle sales made in the year,
@@ -194,14 +197,18 @@ response_DF <- Column_str_describer_AI$chat_structured(
   convert = TRUE
 ) |> as.data.frame()
 
-# Step 3: Save Data_Schema to Output Excel
+### Save Data_Schema to Output Excel
 write_xlsx(x = response_DF, path = file.path(Path, "Output", "Data_Schema.xlsx"))
+print("Data schema generated and saved successfully. Please review them carefully before proceeding.")
 
 ############################################################################
 
+
+# Step 2: Data cleaning & Validation rules generator ----
+
 ################################ Data cleaning #############################
 
-# Step 4: Load verified Data_Schema and perform data type standardization
+### Load verified Data_Schema and perform data type standardization
 Data_schema <- read_excel(path = file.path(Path, "Output", "Data_Schema.xlsx")) |> as.data.frame()
 
 sales_data <- sales_data_raw
@@ -214,11 +221,11 @@ for (i in 1:nrow(Data_schema)) {
   col_type <- Data_schema$`Data type`[i]
   file_name <- Data_schema$`File name`[i]
   col_name <- Data_schema$`Column name`[i]
-
+  
   if (col_type == "Date") {
     our_datasets[[file_name]][[col_name]] <- Date_converter_fxn(date_col_to_fix = our_datasets[[file_name]][[col_name]])
   }
-
+  
   if (col_type == "Number") {
     our_datasets[[file_name]][[col_name]] <- as.numeric(our_datasets[[file_name]][[col_name]])
   }
@@ -230,7 +237,7 @@ print("Data cleaning complete")
 
 ################################ Validation rules generator ################
 
-# Step 5: Query Gemini AI to generate exhaustive validation rules based on cleaned schema
+### Generate validation rules using Validation_rules_AI based on cleaned schema
 rules_question <- paste0(
   "Here is the verified data schema with descriptions for the datasets:\n",
   jsonlite::toJSON(Data_schema, pretty = TRUE), "\n\n",
@@ -247,39 +254,42 @@ validation_rules_DF <- Validation_rules_AI$chat_structured(
   convert = TRUE
 ) |> as.data.frame()
 
-# Step 6: Export generated validation rules to Output/Validation_Rules.xlsx
+### Export generated validation rules to Output/Validation_Rules.xlsx
 write_xlsx(x = validation_rules_DF, path = file.path(Path, "Output", "Validation_Rules.xlsx"))
-print("Validation rules generated and saved successfully")
+print("Validation rules generated and saved successfully. Please review them carefully before proceeding.")
 
 ############################################################################
 
+
+# Step 3: Validation rules engine ----
+
 ################################ Validation rules engine ###################
 
-# Step 7: Deterministic Rule Execution Engine
+### Deterministic Rule Execution Engine
 # Reads Validation_Rules.xlsx and executes corresponding vanilla R validator functions
+# Initialize validation report container
+validation_report <- data.frame()
 validation_rules_to_run <- read_excel(path = file.path(Path, "Output", "Validation_Rules.xlsx")) |> as.data.frame()
-
-validation_errors_list <- list()
 
 for (i in 1:nrow(validation_rules_to_run)) {
   rule <- validation_rules_to_run[i, ]
-
-  rule_id <- rule$`Rule ID`
-  t1_name <- rule$`Table 1`
+  
+  rule_id   <- rule$`Rule ID`
+  t1_name   <- rule$`Table 1`
   col1_name <- rule$`Column 1`
   rule_type <- rule$`Rule type`
-  t2_name <- rule$`Table 2`
+  t2_name   <- rule$`Table 2`
   col2_name <- rule$`Column 2`
-  param <- rule$`Parameter`
-  severity <- rule$`Severity`
-  desc <- rule$`Description`
-
+  param     <- rule$`Parameter`
+  severity  <- rule$`Severity`
+  desc      <- rule$`Description`
+  
   # Target dataset and primary column vector
-  df1 <- our_datasets[[t1_name]]
+  df1  <- our_datasets[[t1_name]]
   col1 <- df1[[col1_name]]
-
+  
   violation_mask <- rep(FALSE, nrow(df1))
-
+  
   # Dispatch to appropriate validator function based on rule_type
   if (rule_type == "missing") {
     violation_mask <- validator_tools$missing(col1)
@@ -298,9 +308,7 @@ for (i in 1:nrow(validation_rules_to_run)) {
     max_v <- if (length(num_params) >= 2) num_params[2] else Inf
     violation_mask <- validator_tools$range(col1, min_val = min_v, max_val = max_v)
   } else if (rule_type == "exists") {
-    # Reference set lookup in Table 2 (Column 2 or default to Column 1 name in Table 2)
-    t2_target_col <- if (!is.na(col2_name) && trimws(col2_name) != "") col2_name else col1_name
-    ref_vec <- our_datasets[[t2_name]][[t2_target_col]]
+    ref_vec <- our_datasets[[t2_name]][[col2_name]]
     violation_mask <- validator_tools$exists(col1, ref_vec)
   } else if (rule_type %in% c("greater_than", "equals")) {
     # Resolve Column 2 (same-table or cross-table lookup via lookup_ref)
@@ -308,35 +316,35 @@ for (i in 1:nrow(validation_rules_to_run)) {
       key1 <- df1[[col1_name]]
       t2_key2 <- our_datasets[[t2_name]][[col1_name]]
       t2_target <- our_datasets[[t2_name]][[col2_name]]
-
+      
       col2 <- validator_tools$lookup_ref(key1, t2_key2, t2_target)
     } else {
       col2 <- df1[[col2_name]]
     }
-
+    
     if (rule_type == "greater_than") {
       violation_mask <- validator_tools$greater_than(col1, col2)
     } else if (rule_type == "equals") {
       violation_mask <- validator_tools$equals(col1, col2)
     }
   }
-
-  # Log violations into validation report structure
+  
+  # Log violations directly using rbind
   violated_rows <- which(violation_mask)
   if (length(violated_rows) > 0) {
     # Extract VIN if present in df1
     vin_col <- if ("VIN" %in% names(df1)) as.character(df1$VIN[violated_rows]) else rep(NA, length(violated_rows))
-
+    
     # Value for Column 1
     val1 <- as.character(col1[violated_rows])
-
+    
     # Value for Column 2 (for greater_than or equals comparison rules)
     val2 <- if (rule_type %in% c("greater_than", "equals") && exists("col2")) {
       as.character(col2[violated_rows])
     } else {
       rep(NA, length(violated_rows))
     }
-
+    
     err_df <- data.frame(
       `Rule ID`          = rule_id,
       `Table 1`          = t1_name,
@@ -351,14 +359,12 @@ for (i in 1:nrow(validation_rules_to_run)) {
       check.names        = FALSE,
       stringsAsFactors   = FALSE
     )
-    validation_errors_list[[length(validation_errors_list) + 1]] <- err_df
+    validation_report <- rbind(validation_report, err_df)
   }
 }
 
-# Step 8: Combine violation data frames and export final Excel report
-if (length(validation_errors_list) > 0) {
-  validation_report <- do.call(rbind, validation_errors_list)
-} else {
+### Fallback if no violations are found
+if (nrow(validation_report) == 0) {
   validation_report <- data.frame(Message = "No validation errors found.")
 }
 
