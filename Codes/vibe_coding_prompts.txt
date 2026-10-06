@@ -18,7 +18,7 @@ Please write a brief architecture plan explaining how we will build these 5 part
 
 Let's start by building the AI Agents using the `agno` framework. 
 
-Write the Python code to set up two AI agents using Gemini:
+Write the Python code to set up two AI agents using Gemini (ensure that 'GEMINI_MODEL' comes from Colab secrets):
 1. The Schema Agent: Create an agent that acts as an insurance data architect. I need a strict output structure (using Pydantic) that asks the AI to output the File Name, Column Name, Data Type, and a Business Description for every column it sees.
 2. The Rules Agent: Create a second agent that acts as a strict data validator. I need a strict output structure for this one too. It must output a Rule ID, Table 1, Column 1, Rule Type, Table 2 (if comparing two tables), Column 2 (if comparing two columns), a Parameter (like a min/max range), a Severity level, and a Description of the rule.
 
@@ -29,16 +29,17 @@ Next, we need the actual Python tools that will check the data. We don't want th
 
 Write the Python code to create:
 1. A robust Date Converter function that can fix messy Excel dates (like the number 44629), handle blank values, and standardize them into proper dates.
-2. A set of 8 distinct checker functions that take in data columns and flag the errors. I need functions for:
-   - Missing data
-   - Duplicate data (Unique check)
-   - Negative numbers (Positive check)
-   - Numbers outside a specific min/max range
-   - Comparing if one column is greater than another
-   - Checking if two columns are exactly equal
-   - Checking if an ID exists in another table (like checking if a Claim ID exists in the Sales table)
-   - Checking if a value is part of an allowed list of words.
-3. Group all these 8 checker functions into a single dictionary so we can easily call them later by their name.
+2. A set of 9 distinct checker functions that take in data columns and flag the errors. Do not create any additional rules. I need exactly these rules:
+   - lookup_ref
+   - missing
+   - unique
+   - positive
+   - range
+   - greater_than
+   - equals
+   - exists
+   - allowed_values
+3. Group all these 9 checker functions into a single dictionary so we can easily call them later by their name.
 
 
 **Prompt 3: Reading Data and Generating the Schema (Step 2)**
@@ -48,8 +49,9 @@ Now let's put the first AI agent to work.
 Write the Python code to:
 1. Load two Excel files (Sales Data and Claims Data) into the program.
 2. Take a small sample of the data (the first 50 rows) and pass it to our Schema Agent. 
-3. Ask the Schema Agent to figure out the data types and descriptions, and save its response to an Excel file called "Data_Schema.xlsx".
-4. Once the schema is saved, use it to clean our original data. If the AI said a column is a "Date", run it through our Date Converter function. If it said it's a "Number", force it into a numeric format.
+3. Ask the Schema Agent to figure out the data types and descriptions, and save its response to an Excel file called "Data_Schema.xlsx" (with columns: File Name, Column Name, Data Type, Business Description).
+4. Since this will run in Google Colab, end the current cell here so the user can open, review, and manually edit "Data_Schema.xlsx" if necessary.
+5. In a new Colab cell, load the finalized schema and use it to clean our original data. If the AI said a column is a "Date", run it through our Date Converter function. If it said it's a "Number", force it into a numeric format.
 
 
 **Prompt 4: Generating Rules and Running the Engine (Step 3)**
@@ -57,8 +59,18 @@ Write the Python code to:
 Finally, let's generate the rules and build the engine to test them.
 
 Write the Python code to:
-1. Take our cleaned data samples and our new Data Schema, and send them to the Rules Agent. Ask it to generate an exhaustive list of rules using the types we defined earlier (missing, unique, range, etc.). Save these rules to an Excel file called "Validation_Rules.xlsx".
-2. Build the Execution Engine: Write a loop that goes through every single rule in "Validation_Rules.xlsx" one by one.
-3. For each rule, the engine should figure out which table and column it applies to, and use our dictionary of checker functions to test the entire column. 
-4. If it finds any violations, it should record the row number, the exact value that failed, the rule ID, and the description.
-5. Export all the broken rules and their details into a final Excel file called "Validation_Report.xlsx".
+1. Take our cleaned data samples and our new Data Schema, and send them to the Rules Agent. Ask it to generate an exhaustive list of rules using the types we defined earlier (missing, unique, range, etc.). Save these rules to an Excel file called "Validation_Rules.xlsx". Ensure the AI understands the column definitions:
+   - Rule ID: A unique identifier for the rule.
+   - Table 1: The primary table the rule applies to (e.g., 'Sales' or 'Claims').
+   - Column 1: The primary column being validated.
+   - Rule Type: The specific validation rule being applied (e.g., 'missing', 'range', 'lookup_ref').
+   - Table 2: The reference table, if the rule involves comparing two tables.
+   - Column 2: The reference column, if comparing two columns.
+   - Parameter: Any specific value needed for the rule (e.g., a min/max value for 'range', or an allowed list).
+   - Severity: The impact level if the rule fails (e.g., 'High', 'Medium', 'Low').
+   - Description: A clear, human-readable explanation of what the rule checks.
+2. Since this will run in Google Colab, end the current cell here so the user can open, review, and manually edit "Validation_Rules.xlsx" to add, modify, or remove any rules.
+3. In a new Colab cell, build the Execution Engine: Write a loop that goes through every single rule in the finalized "Validation_Rules.xlsx" one by one.
+4. For each rule, the engine should figure out which table and column it applies to, and use our dictionary of checker functions to test the entire column. 
+5. If it finds any violations, it should record the row number, the exact value that failed, the rule ID, and the description.
+6. Export all the broken rules and their details into a final Excel file called "Validation_Report.xlsx" (with columns: Row Number, Failed Value, Rule ID, Description).
