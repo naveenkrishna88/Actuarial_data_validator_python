@@ -2,6 +2,8 @@
 
 I want to build an automated Data Schema Generation and Cleaning tool in Python, specifically structured to run in a Google Colab notebook. I will be working with insurance data like Sales and Claims in Excel.
 
+CRITICAL CONSTRAINT: The codebase must be extremely concise, minimal, and DRY (Don't Repeat Yourself). Avoid over-engineering, unnecessary abstractions, and boilerplate. Keep it simple and focused. Do not create any example or dummy data.
+
 **Prompt 1A: Setting up the Schema Agent**
 Write the Python code to accomplish the following in a Google Colab notebook:
 1. Connect to Google Gemini AI using the `agno` framework to set up a Schema Agent. Ensure 'GEMINI_MODEL' comes from Colab secrets.
@@ -10,7 +12,6 @@ Write the Python code to accomplish the following in a Google Colab notebook:
    - Column Name: The name of the column in the file.
    - Data Type: The inferred data type (MUST be exactly one of: date, numeric, string).
    - Business Description: A description of what the column means in a business context.
-CRITICAL CONSTRAINT: The codebase must be extremely concise, minimal, and DRY (Don't Repeat Yourself). Avoid over-engineering, unnecessary abstractions, and boilerplate. Keep it simple and focused.
 
 **Prompt 1B: Generating the Schema**
 Write the Python code for a new Colab cell to:
@@ -29,6 +30,8 @@ Write the Python code for a new Colab cell to:
 
 I want to build an automated Actuarial Rules Generation and Validation Engine in Python, specifically structured to run in a Google Colab notebook. I have pre-cleaned insurance data (Sales Data and Claims Data) and a Data Schema Excel file that defines the data types and business descriptions for each column.
 
+CRITICAL CONSTRAINT: The codebase must be extremely concise, minimal, and DRY (Don't Repeat Yourself). Avoid over-engineering, unnecessary abstractions, and boilerplate. Keep it simple and focused. Do not create any example or dummy data.
+
 **Prompt 2A: Setting up the Rules Agent**
 Write the Python code to accomplish the following in a Google Colab notebook:
 1. Connect to Google Gemini AI using the `agno` framework to set up a Rules Agent. Ensure 'GEMINI_MODEL' comes from Colab secrets. I need a strict output structure for this agent using Pydantic. It must output the following fields (include these descriptions in the Pydantic Fields):
@@ -42,7 +45,6 @@ Write the Python code to accomplish the following in a Google Colab notebook:
    - Severity: The impact level if the rule fails (e.g., 'High', 'Medium', 'Low').
    - Description: A clear, human-readable explanation of what the rule checks.
    Critically, the Rule Type MUST be exactly one of the following 9 rules (do not create any additional rules): lookup_ref, missing, unique, positive, range, greater_than, equals, exists, allowed_values.
-CRITICAL CONSTRAINT: The codebase must be extremely concise, minimal, and DRY (Don't Repeat Yourself). Avoid over-engineering, unnecessary abstractions, and boilerplate. Keep it simple and focused.
 
 **Prompt 2B: Defining the Checker Functions**
 Write the Python code for a new Colab cell to:
