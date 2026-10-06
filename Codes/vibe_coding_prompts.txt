@@ -1,6 +1,6 @@
 ### Master Prompt
 
-I want to build an automated "Actuarial Data Validation Engine" in Python. I will be working with insurance data like Sales and Claims in Excel.
+I want to build an automated "Actuarial Data Validation Engine" in Python, specifically structured to run in a Google Colab notebook. I will be working with insurance data like Sales and Claims in Excel.
 
 Here is how I want the program to work:
 1. Setup: It should connect to the Google Gemini AI using the `agno` framework.
@@ -9,7 +9,7 @@ Here is how I want the program to work:
 4. Data Cleaning & Tools: It needs standard Python functions to clean up messy Excel dates, and standard tools to check data against the rules the AI created.
 5. The Engine: Finally, it needs an engine that runs purely in Python. This engine will take the AI-generated rules, test every single row of my data against them, and output a final Excel report showing exactly which rows failed which rules.
 
-Please write a brief architecture plan explaining how we will build these 5 parts step-by-step. Do not write the code yet.
+Please write a brief architecture plan explaining how we will build these 5 parts step-by-step for a Google Colab environment (where each major step can be its own cell). Do not write the code yet.
 
 
 ### Step-by-Step Prompts
