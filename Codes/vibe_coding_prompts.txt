@@ -1,0 +1,64 @@
+### Master Prompt
+
+I want to build an automated "Actuarial Data Validation Engine" in Python. I will be working with insurance data like Sales and Claims in Excel.
+
+Here is how I want the program to work:
+1. Setup: It should connect to the Google Gemini AI using the `agno` framework.
+2. Data Understanding (Schema): It should use the AI to look at samples of my data, figure out what each column means, guess the data type (like text, number, or date), and save this understanding into a spreadsheet.
+3. Rule Generation: It should ask the AI to look at the data again and automatically invent dozens of strict validation rules (like checking for missing values, making sure IDs are unique, or ensuring dates make sense across different tables).
+4. Data Cleaning & Tools: It needs standard Python functions to clean up messy Excel dates, and standard tools to check data against the rules the AI created.
+5. The Engine: Finally, it needs an engine that runs purely in Python. This engine will take the AI-generated rules, test every single row of my data against them, and output a final Excel report showing exactly which rows failed which rules.
+
+Please write a brief architecture plan explaining how we will build these 5 parts step-by-step. Do not write the code yet.
+
+
+### Step-by-Step Prompts
+
+**Prompt 1: Setting up the AI Agents (Step 1a)**
+
+Let's start by building the AI Agents using the `agno` framework. 
+
+Write the Python code to set up two AI agents using Gemini:
+1. The Schema Agent: Create an agent that acts as an insurance data architect. I need a strict output structure (using Pydantic) that asks the AI to output the File Name, Column Name, Data Type, and a Business Description for every column it sees.
+2. The Rules Agent: Create a second agent that acts as a strict data validator. I need a strict output structure for this one too. It must output a Rule ID, Table 1, Column 1, Rule Type, Table 2 (if comparing two tables), Column 2 (if comparing two columns), a Parameter (like a min/max range), a Severity level, and a Description of the rule.
+
+
+**Prompt 2: Building the Data Tools (Step 1b)**
+
+Next, we need the actual Python tools that will check the data. We don't want the AI to check the data directly; we want standard, fast Python functions to do it.
+
+Write the Python code to create:
+1. A robust Date Converter function that can fix messy Excel dates (like the number 44629), handle blank values, and standardize them into proper dates.
+2. A set of 8 distinct checker functions that take in data columns and flag the errors. I need functions for:
+   - Missing data
+   - Duplicate data (Unique check)
+   - Negative numbers (Positive check)
+   - Numbers outside a specific min/max range
+   - Comparing if one column is greater than another
+   - Checking if two columns are exactly equal
+   - Checking if an ID exists in another table (like checking if a Claim ID exists in the Sales table)
+   - Checking if a value is part of an allowed list of words.
+3. Group all these 8 checker functions into a single dictionary so we can easily call them later by their name.
+
+
+**Prompt 3: Reading Data and Generating the Schema (Step 2)**
+
+Now let's put the first AI agent to work. 
+
+Write the Python code to:
+1. Load two Excel files (Sales Data and Claims Data) into the program.
+2. Take a small sample of the data (the first 50 rows) and pass it to our Schema Agent. 
+3. Ask the Schema Agent to figure out the data types and descriptions, and save its response to an Excel file called "Data_Schema.xlsx".
+4. Once the schema is saved, use it to clean our original data. If the AI said a column is a "Date", run it through our Date Converter function. If it said it's a "Number", force it into a numeric format.
+
+
+**Prompt 4: Generating Rules and Running the Engine (Step 3)**
+
+Finally, let's generate the rules and build the engine to test them.
+
+Write the Python code to:
+1. Take our cleaned data samples and our new Data Schema, and send them to the Rules Agent. Ask it to generate an exhaustive list of rules using the types we defined earlier (missing, unique, range, etc.). Save these rules to an Excel file called "Validation_Rules.xlsx".
+2. Build the Execution Engine: Write a loop that goes through every single rule in "Validation_Rules.xlsx" one by one.
+3. For each rule, the engine should figure out which table and column it applies to, and use our dictionary of checker functions to test the entire column. 
+4. If it finds any violations, it should record the row number, the exact value that failed, the rule ID, and the description.
+5. Export all the broken rules and their details into a final Excel file called "Validation_Report.xlsx".
