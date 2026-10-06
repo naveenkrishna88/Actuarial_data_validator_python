@@ -1,7 +1,8 @@
-### Prompt 1: Data Schema Generation and Data Cleaning
+### Part 1: Data Schema Generation and Data Cleaning (New Chat)
 
 I want to build an automated Data Schema Generation and Cleaning tool in Python, specifically structured to run in a Google Colab notebook. I will be working with insurance data like Sales and Claims in Excel.
 
+**Prompt 1A: Setting up the Schema Agent**
 Write the Python code to accomplish the following in a Google Colab notebook:
 1. Connect to Google Gemini AI using the `agno` framework to set up a Schema Agent. Ensure 'GEMINI_MODEL' comes from Colab secrets.
 2. The Schema Agent must use a strict output structure (using Pydantic) to output the following fields (include these descriptions in the Pydantic Fields):
@@ -9,18 +10,26 @@ Write the Python code to accomplish the following in a Google Colab notebook:
    - Column Name: The name of the column in the file.
    - Data Type: The inferred data type (MUST be exactly one of: date, numeric, string).
    - Business Description: A description of what the column means in a business context.
-3. Load two Excel files (Sales Data and Claims Data) into the program.
-4. Take a small sample of the data (the first 50 rows) and pass it to our Schema Agent. Ask it to figure out the data types and descriptions, and save its response to an Excel file in an "Output" folder called "Output/Data_Schema.xlsx".
-5. Since this will run in Google Colab, end the current cell here so the user can use the Colab file manager to download, review, and manually edit "Output/Data_Schema.xlsx" if necessary.
-6. In a new Colab cell, load the finalized "Output/Data_Schema.xlsx" and use it to clean our original data. Create a robust Date Converter function that can fix messy Excel dates (like the number 44629), handle blank values, and standardize them. If the schema says a column is a "date", run it through our converter. If it says it's "numeric", force it into a numeric format.
-
 CRITICAL CONSTRAINT: The codebase must be extremely concise, minimal, and DRY (Don't Repeat Yourself). Avoid over-engineering, unnecessary abstractions, and boilerplate. Keep it simple and focused.
 
+**Prompt 1B: Generating the Schema**
+Write the Python code for a new Colab cell to:
+1. Load two Excel files (Sales Data and Claims Data) into the program.
+2. Take a small sample of the data (the first 50 rows) and pass it to our Schema Agent. Ask it to figure out the data types and descriptions, and save its response to an Excel file in an "Output" folder called "Output/Data_Schema.xlsx".
+3. Since this will run in Google Colab, end the current cell here so the user can use the Colab file manager to download, review, and manually edit "Output/Data_Schema.xlsx" if necessary.
 
-### Prompt 2: Rules Generation and Validation Engine
+**Prompt 1C: Cleaning the Data**
+Write the Python code for a new Colab cell to:
+1. Load the finalized "Output/Data_Schema.xlsx" and use it to clean our original data. 
+2. Create a robust Date Converter function that can fix messy Excel dates (like the number 44629), handle blank values, and standardize them. 
+3. If the schema says a column is a "date", run it through our converter. If it says it's "numeric", force it into a numeric format.
+
+
+### Part 2: Rules Generation and Validation Engine (New Chat)
 
 I want to build an automated Actuarial Rules Generation and Validation Engine in Python, specifically structured to run in a Google Colab notebook. I have pre-cleaned insurance data (Sales Data and Claims Data) and a Data Schema Excel file that defines the data types and business descriptions for each column.
 
+**Prompt 2A: Setting up the Rules Agent**
 Write the Python code to accomplish the following in a Google Colab notebook:
 1. Connect to Google Gemini AI using the `agno` framework to set up a Rules Agent. Ensure 'GEMINI_MODEL' comes from Colab secrets. I need a strict output structure for this agent using Pydantic. It must output the following fields (include these descriptions in the Pydantic Fields):
    - Rule ID: A unique identifier for the rule.
@@ -33,12 +42,21 @@ Write the Python code to accomplish the following in a Google Colab notebook:
    - Severity: The impact level if the rule fails (e.g., 'High', 'Medium', 'Low').
    - Description: A clear, human-readable explanation of what the rule checks.
    Critically, the Rule Type MUST be exactly one of the following 9 rules (do not create any additional rules): lookup_ref, missing, unique, positive, range, greater_than, equals, exists, allowed_values.
-2. Create a set of 9 distinct Python checker functions that take in data columns and flag errors. These functions should directly correspond to the exactly 9 rule types defined above. Group all these 9 checker functions into a single dictionary so we can easily call them later by their name.
-3. Load the cleaned data samples and the Data Schema ("Output/Data_Schema.xlsx"), and send them to the Rules Agent. Ask it to generate an exhaustive list of rules. The Pydantic model defined earlier already handles the structure. Save these rules to an Excel file called "Output/Validation_Rules.xlsx".
-4. Since this will run in Google Colab, end the current cell here so the user can use the Colab file manager to download, review, and manually edit "Output/Validation_Rules.xlsx" to add, modify, or remove any rules.
-5. In a new Colab cell, build the Execution Engine: Write a loop that goes through every single rule in the finalized "Output/Validation_Rules.xlsx" one by one.
-6. For each rule, the engine should figure out which table and column it applies to, and use our dictionary of checker functions to test the entire column. 
-7. If it finds any violations, it should record the row number, the exact value that failed, the rule ID, and the description.
-8. Export all the broken rules and their details into a final Excel file called "Output/Validation_Report.xlsx" (with columns: Row Number, Failed Value, Rule ID, Description).
-
 CRITICAL CONSTRAINT: The codebase must be extremely concise, minimal, and DRY (Don't Repeat Yourself). Avoid over-engineering, unnecessary abstractions, and boilerplate. Keep it simple and focused.
+
+**Prompt 2B: Defining the Checker Functions**
+Write the Python code for a new Colab cell to:
+1. Create a set of 9 distinct Python checker functions that take in data columns and flag errors. These functions should directly correspond to the exactly 9 rule types defined above. 
+2. Group all these 9 checker functions into a single dictionary so we can easily call them later by their name.
+
+**Prompt 2C: Generating the Rules**
+Write the Python code for a new Colab cell to:
+1. Load the cleaned data samples and the Data Schema ("Output/Data_Schema.xlsx"), and send them to the Rules Agent. Ask it to generate an exhaustive list of rules. The Pydantic model defined earlier already handles the structure. Save these rules to an Excel file called "Output/Validation_Rules.xlsx".
+2. Since this will run in Google Colab, end the current cell here so the user can use the Colab file manager to download, review, and manually edit "Output/Validation_Rules.xlsx" to add, modify, or remove any rules.
+
+**Prompt 2D: The Execution Engine**
+Write the Python code for a new Colab cell to:
+1. Build the Execution Engine: Write a loop that goes through every single rule in the finalized "Output/Validation_Rules.xlsx" one by one.
+2. For each rule, the engine should figure out which table and column it applies to, and use our dictionary of checker functions to test the entire column. 
+3. If it finds any violations, it should record the row number, the exact value that failed, the rule ID, and the description.
+4. Export all the broken rules and their details into a final Excel file called "Output/Validation_Report.xlsx" (with columns: Row Number, Failed Value, Rule ID, Description).
