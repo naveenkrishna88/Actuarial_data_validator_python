@@ -20,16 +20,8 @@ Let's start by building the AI Agents using the `agno` framework.
 
 Write the Python code to set up two AI agents using Gemini (ensure that 'GEMINI_MODEL' comes from Colab secrets):
 1. The Schema Agent: Create an agent that acts as an insurance data architect. I need a strict output structure (using Pydantic) that asks the AI to output the File Name, Column Name, Data Type, and a Business Description for every column it sees.
-2. The Rules Agent: Create a second agent that acts as a strict data validator. I need a strict output structure for this one too. It must output a Rule ID, Table 1, Column 1, Rule Type, Table 2 (if comparing two tables), Column 2 (if comparing two columns), a Parameter (like a min/max range), a Severity level, and a Description of the rule.
-
-
-**Prompt 2: Building the Data Tools (Step 1b)**
-
-Next, we need the actual Python tools that will check the data. We don't want the AI to check the data directly; we want standard, fast Python functions to do it.
-
-Write the Python code to create:
-1. A robust Date Converter function that can fix messy Excel dates (like the number 44629), handle blank values, and standardize them into proper dates.
-2. A set of 9 distinct checker functions that take in data columns and flag the errors. Do not create any additional rules. I need exactly these rules:
+2. The Rules Agent: Create a second agent that acts as a strict data validator. I need a strict output structure for this one too. It must output a Rule ID, Table 1, Column 1, Rule Type, Table 2 (if comparing two tables), Column 2 (if comparing two columns), a Parameter (like a min/max range), a Severity level, and a Description of the rule. 
+   Critically, the Rule Type MUST be exactly one of the following 9 rules (do not create any additional rules):
    - lookup_ref
    - missing
    - unique
@@ -39,6 +31,15 @@ Write the Python code to create:
    - equals
    - exists
    - allowed_values
+
+
+**Prompt 2: Building the Data Tools (Step 1b)**
+
+Next, we need the actual Python tools that will check the data. We don't want the AI to check the data directly; we want standard, fast Python functions to do it.
+
+Write the Python code to create:
+1. A robust Date Converter function that can fix messy Excel dates (like the number 44629), handle blank values, and standardize them into proper dates.
+2. A set of 9 distinct checker functions that take in data columns and flag the errors. These functions should directly correspond to the exactly 9 rule types we defined for the Rules Agent.
 3. Group all these 9 checker functions into a single dictionary so we can easily call them later by their name.
 
 
