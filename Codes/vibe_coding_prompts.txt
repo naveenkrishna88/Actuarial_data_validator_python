@@ -53,7 +53,7 @@ Write the Python code for a new Colab cell to:
 
 **Prompt 2C: Generating the Rules**
 Write the Python code for a new Colab cell to:
-1. Load the cleaned data samples and the Data Schema ("Output/Data_Schema.xlsx"), and send them to the Rules Agent. Ask it to generate an exhaustive list of rules. The Pydantic model defined earlier already handles the structure. Save these rules to an Excel file called "Output/Validation_Rules.xlsx".
+1. Load the cleaned data samples and the Data Schema ("Output/Data_Schema.xlsx"), and send them to the Rules Agent. Ask it to generate an exhaustive list of rules. Mention to the AI that it can generate single-file rules (within a dataset) or cross-file validations (comparing between datasets). The Pydantic model defined earlier already handles the structure. Save these rules to an Excel file called "Output/Validation_Rules.xlsx".
 2. Since this will run in Google Colab, end the current cell here so the user can use the Colab file manager to download, review, and manually edit "Output/Validation_Rules.xlsx" to add, modify, or remove any rules.
 
 **Prompt 2D: The Execution Engine**
