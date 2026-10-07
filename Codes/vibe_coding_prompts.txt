@@ -1,3 +1,38 @@
+### Phase 0: Master Prompt (Ideation, Architecture Review & Prompt Generation)
+
+Use this Master Prompt in a new AI chat before writing any code. It demonstrates how to use AI for prompt engineering, architectural validation, and breaking down a complex actuarial problem into simple, modular prompts for non-technical users.
+
+--------------------------------------------------------------------------------
+[MASTER PROMPT - COPY & PASTE TO AI]
+--------------------------------------------------------------------------------
+Act as a Principal Actuarial Data Architect and AI Systems Engineer.
+
+I am an insurance analyst with no coding background. I want to build an automated, end-to-end Actuarial Data Validator tool that will run entirely inside a Google Colab notebook.
+
+BUSINESS CONTEXT & PROBLEM:
+1. In insurance operations, we work with messy Excel datasets (specifically: Vehicle Sales Data and Warranty Claims Data).
+2. Common data quality issues include: missing critical fields, duplicate identifiers, invalid dates (such as Excel serial numbers like 44629), values outside valid actuarial ranges, and cross-dataset inconsistencies (e.g., a claim filed before the vehicle was sold, or an invalid claim status).
+3. Currently, checking these takes hours of manual Excel work.
+
+WHAT I WANT TO BUILD:
+An automated two-phase system using Google Gemini AI and Python:
+- Phase 1 (Schema & Cleaning): The AI inspects a small sample of our raw Excel tables to generate a standardized Data Schema (data types, descriptions). We then clean the data (especially messy dates and numbers) based on this schema.
+- Phase 2 (Validation Rules & Execution): The AI reads the cleaned data schema and generates an exhaustive set of validation rules (both single-table checks and cross-table checks). A deterministic Python engine then executes these rules against the full datasets and exports an audit-ready Excel report of all violations (identifying the row number, VIN, failed value, and reason).
+
+CRITICAL REQUIREMENTS:
+- Human-in-the-Loop: At key milestones (after Schema generation and after Rules generation), the pipeline must output Excel files so an analyst can review, verify, and manually tweak them in Colab before proceeding.
+- No Over-Engineering: The solution must be minimal, concise, DRY (Don't Repeat Yourself), and zero boilerplate. No dummy data.
+- Non-Technical Accessibility: The implementation must be broken down into clean, modular, sequential steps that a non-technical person can build using conversational "vibe coding".
+
+YOUR TASK:
+1. Review this solution architecture from an actuarial and data quality perspective. Point out any potential bottlenecks, edge cases, or improvements.
+2. Break this project down into a step-by-step "Vibe Coding Roadmap" split into two distinct parts:
+   - Part 1: Schema Generation & Data Cleaning
+   - Part 2: Rules Generation & Validation Execution Engine
+3. For each step in the roadmap, craft a precise, non-technical prompt that I can copy-paste into an AI coding assistant to generate the exact Python code for a single Google Colab cell.
+--------------------------------------------------------------------------------
+
+
 ### Part 1: Data Schema Generation and Data Cleaning (New Chat)
 
 I want to build an automated Data Schema Generation and Cleaning tool in Python, specifically structured to run in a Google Colab notebook. I will be working with insurance data like Sales and Claims in Excel.
